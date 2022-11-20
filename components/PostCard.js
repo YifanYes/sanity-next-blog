@@ -1,23 +1,22 @@
+import React from "react";
 import Image from "next/image";
 
-const PostCard = () => {
+const PostCard = (props) => {
+    const post = props.data;
+    const slug = post.slug.current;
+
     return (
         <div className="col-lg-4">
             <div className="card">
-                <Image
-                    width="450"
-                    height="500"
-                    src={"https://via.placeholder.com/450"}
-                    className="card-img-top"
-                    alt="..."
-                />
+                {post.mainImage && (
+                    <Image src={post.mainImage} alt="Main image" />
+                )}
                 <div className="card-body">
-                    <h5 className="card-title">Blog post One</h5>
+                    <h5 className="card-title">{post.title}</h5>
                     <p className="card-text">
-                        Some quick example text to build on the card title and make up the
-                        bulk of the content.
+                        {post.excerpt}
                     </p>
-                    <a href="blog-post-one" className="btn btn-primary">
+                    <a href={slug} className="btn btn-primary">
                         Go somewhere
                     </a>
                 </div>
@@ -25,4 +24,5 @@ const PostCard = () => {
         </div>
     );
 };
+
 export default PostCard;

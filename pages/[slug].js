@@ -1,7 +1,19 @@
+import React, { useEffect, useState } from "react";
+import imageUrlBuilder from "@sanity/image-url";
+import BlockContent from "@sanity/block-content-to-react";
+import Link from "next/link";
 import Image from "next/image";
-import Link from "next/link"
+import { sanityClient } from "../sanityClient";
 
-const BlogPost = () => {
+const BlogPost = (props) => {
+    const { title, body, image } = props;
+    const [imageUrl, setImageUrl] = useState("");
+
+    useEffect(() => {
+        const imageBuilder = imageUrlBuilder(sanityClient);
+        setImageUrl(imageBuilder.image(image));
+    }, [image]);
+
     return (
         <div className="container py-5">
             <nav aria-label="breadcrumb">
@@ -10,33 +22,44 @@ const BlogPost = () => {
                         <Link href="/blog">Blog</Link>
                     </li>
                     <li className="breadcrumb-item active" aria-current="page">
-                        Blog post Title
+                        {title}
                     </li>
                 </ol>
             </nav>
             <div className="post-content-wrap">
-                <h1>Blog single post Title</h1>
-                <Image
-                    width="1600"
-                    height="450"
-                    src={"https://via.placeholder.com/1600"}
-                    class="card-img-top"
-                    alt="..."
-                />
-                <p>
-                    What is Lorem Ipsum? Lorem Ipsum is simply dummy text of the printing
-                    and typesetting industry. Lorem Ipsum has been the industrys standard
-                    dummy text ever since the 1500s, when an unknown printer took a galley
-                    of type and scrambled it to make a type specimen book. It has survived
-                    not only five centuries, but also the leap into electronic
-                    typesetting, remaining essentially unchanged. It was popularised in
-                    the 1960s with the release of Letraset sheets containing Lorem Ipsum
-                    passages, and more recently with desktop publishing software like
-                    Aldus PageMaker including versions of Lorem Ipsum.
-                </p>
+                <h1>{title}</h1>
+                {imageUrl &&
+                    <Image className="img-fluid" src={imageUrl} alt="Post image" />}
+
+                <BlockContent blocks={body} />
             </div>
         </div>
     );
+};
+
+export const getServerSideProps = async (context) => {
+    const pageSlug = context.query.slug;
+
+    if (!pageSlug) return { notFound: true };
+
+    const query = encodeURIComponent(
+        `*[ _type == "post" && slug.current == "${pageSlug}" ]`
+    );
+
+    const url = `${process.env.SANITY_URL}query=${query}`;
+    const data = await fetch(url).then((res) => res.json());
+    const post = data.result[0];
+
+    if (!post) return { notFound: true };
+    else {
+        return {
+            props: {
+                title: post.title,
+                body: post.body,
+                image: post.mainImage,
+            },
+        };
+    }
 };
 
 export default BlogPost;
