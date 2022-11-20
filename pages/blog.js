@@ -1,8 +1,5 @@
-import React, { useState, useEffect } from "react";
-import imageUrlBuilder from "@sanity/image-url";
-import { sanityClient } from "../sanityClient";
-import Image from "next/image";
-import PostCard from "../components/PostCard";
+import { useState, useEffect } from "react";
+import PostCard from "../components/PostCard"
 
 const Blog = ({ posts }) => {
     const [mappedPosts, setMappedPosts] = useState([]);
@@ -10,16 +7,10 @@ const Blog = ({ posts }) => {
     useEffect(() => {
         if (Array.isArray(posts) && !posts.length) setMappedPosts([]);
         else {
-            const imageBuilder = imageUrlBuilder(sanityClient);
-
             setMappedPosts(
                 posts.map((post) => {
                     return {
-                        ...post,
-                        mainImage: imageBuilder
-                            .image(post.mainImage)
-                            .width(450)
-                            .height(500),
+                        ...post
                     };
                 })
             );
@@ -29,6 +20,7 @@ const Blog = ({ posts }) => {
     return (
         <div className="container">
             <h1 className="my-5">Blog Page</h1>
+
             <div className="row">
                 {mappedPosts &&
                     mappedPosts.length &&
@@ -41,8 +33,10 @@ const Blog = ({ posts }) => {
 };
 
 export const getServerSideProps = async (context) => {
+
     const query = encodeURIComponent(`*[ _type == "post" ]`);
     const url = `${process.env.SANITY_URL}query=${query}`;
+
     const data = await fetch(url).then((res) => res.json());
     const posts = data.result;
 
@@ -52,8 +46,7 @@ export const getServerSideProps = async (context) => {
                 posts: [],
             },
         };
-    }
-    else {
+    } else {
         return {
             props: {
                 posts,
